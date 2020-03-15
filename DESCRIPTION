@@ -1,0 +1,13 @@
+Package: myfirstpackage
+Title: Package Building Demonstration
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Marques",
+           family = "Chacon",
+           role = c("aut", "cre"),
+           email = "mrqs97@uw.edu")
+Description: This package demonstrates how to build a package for STAT302 at UW.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.0
