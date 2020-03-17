@@ -31,8 +31,8 @@ actual class values using the k-nearest neighbors approach of identifying
 patterns in data points near each other.
 }
 \examples{
-my_knn_cv(my_iris[, 1:4], my_iris[, 5], 1, 5)
-my_knn_cv(my_iris[, 1:4], my_iris[, 5], 5, 5)
+my_knn_cv(my_iris[, 1:4], as.data.frame(my_iris[, 5]), 1, 5)
+my_knn_cv(my_iris[, 1:4], as.data.frame(my_iris[, 5]), 5, 5)
 
 }
 \keyword{prediction}

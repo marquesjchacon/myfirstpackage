@@ -20,8 +20,8 @@
 #'   misclassification error.
 #'
 #' @examples
-#' my_knn_cv(my_iris[, 1:4], my_iris[, 5], 1, 5)
-#' my_knn_cv(my_iris[, 1:4], my_iris[, 5], 5, 5)
+#' my_knn_cv(my_iris[, 1:4], as.data.frame(my_iris[, 5]), 1, 5)
+#' my_knn_cv(my_iris[, 1:4], as.data.frame(my_iris[, 5]), 5, 5)
 #'
 #' @import magrittr class stats dplyr
 #' @export
@@ -35,14 +35,14 @@ my_knn_cv <- function(train, cl, k_nn, k_cv) {
       select(-c(fold))
     data_test <- data[fold == i, ] %>%
       select(-c(fold))
-    cl_train <- cl[fold != i]
+    cl_train <- cl[fold != i,]
 
-    prediction <- knn(data_train, data_test, cl_train, k_nn)
+    prediction <- knn(data_train, data_test, as.matrix(cl_train), k_nn)
 
     # Computes the proportion of observations that were classified incorrectly
-    cv_errs[i] <- 1 - mean(cl[fold == i] == prediction)
+    cv_errs[i] <- 1 - mean(as.matrix(cl[fold == i,]) == as.matrix(prediction))
   }
-  class <- knn(train, train, cl, k_nn)
+  class <- knn(train, train, as.matrix(cl), k_nn)
   cv_err <- mean(cv_errs)
 
   return(list("class" = class,

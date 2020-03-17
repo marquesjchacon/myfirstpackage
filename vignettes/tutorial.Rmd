@@ -21,12 +21,16 @@ This package contains useful functions for statistical inference and prediction.
 devtools::install_github("marquesjchacon/myfirstpackage")
 ```
 
-Next, you will want include the call `library()` to load this package. For this tutorial, we will also need to load the `tidyverse`, `class`, and `randomForest` packages. Furthermore, we will be using the `my_gapminder` dataset to demonstrate the use of these functions, so we will need to load this dataset as well.
+Next, you will want include the call `library()` to load this package. For this tutorial, we will also need to load the `magrittr`, `dplyr`, `stats`, `ggplot2`, `class`, and `randomForest` packages. Furthermore, we will be using the `my_gapminder` dataset to demonstrate the use of these functions, so we will need to load this dataset as well.
 ```{r setup, warning = FALSE, message = FALSE}
 library(myfirstpackage)
-library(tidyverse)
+library(magrittr)
+library(dplyr)
+library(stats)
+library(ggplot2)
 library(class)
 library(randomForest)
+library(kableExtra)
 data("my_gapminder")
 ```
 
@@ -73,5 +77,85 @@ From this result, we see that the p-value for this hypothesis test is `r result3
 
 `my_lm` is a function that performs multiple linear regression using variables from a given dataset. To show how this function works, we will use `lifeExp` as our response varibale and `gdpPercap` and `continent` as our explanatory variables:
 ```{r}
-my_lm(lifeExp ~ gdpPercap + continent, my_gapminder)
+model <- my_lm(lifeExp ~ gdpPercap + continent, my_gapminder)
+model
 ```
+The value of our `gdpPercap` coefficient is 0.0004453. This means that if we hold all other variables constant, and increased the GDP per capita by 1 US$, then we should expect the life expectancy to increase by .0004453 years.
+This coefficient also corresponds to a hypothesis test of the true value of the coefficient. Particularly, we can define our hypotheis test as $\begin{align}
+  H_0: \mu &= 0,\\
+  H_a: \mu &\neq 0.
+  \end{align}$
+Where $\mu$ represents the true value of the coefficient.
+In this coefficient table, we are assuming that there is no relationship between GDP per capita and life expectancy (hence why the null hypothesis is 0). However, the t-value from this hypothesis test is 18.95, which is very significant. This indicates a p-value of close to 0.Since this falls below our cutoff of $\alpha = 0.05$, this means there is very strong evidence to reject the null. In other words, to there is very strong evidence to reject the notion that there is no relationship between the two variables.
+Now we will construct a plot of the Actual vs. Fitted values:
+```{r}
+x <- model.matrix(lifeExp ~ gdpPercap + continent, my_gapminder)
+y <- model.response(model.frame(lifeExp ~ gdpPercap + continent, my_gapminder))
+coeff <- solve(t(x) %*% x) %*% t(x) %*% y
+y_hat <- x %*% coeff
+my_df <- data.frame(actual = my_gapminder$lifeExp, fitted = y_hat)
+
+ggplot(my_df, aes(x = fitted, y = actual)) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0, col = "red", lty = 2) + 
+  theme_bw(base_size = 15) +
+  labs(x = "Fitted values", y = "Actual values", title = "Actual vs. Fitted") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+According to this Actual vs. Fitted plot, it appears that our estimated values are increasing alongside the actual values in the dataset. In other words, there is a pretty strong correlation between life expectancy and GDP per capita. This means that, at least up until life expectancy hits 80 years, GDP per capita has a positive effect on it. However, after that point, the actual values start to drift away from what we would expect, assuming a linear relationship. This means that overall, the relationship between GDP per capita and life expectancy is not linear, although it seems to be up until you get to high GDP values. The ultimate takeaway from this graph is that GDP per capita has a strong positive correlation with life expectancy up until we reach high GDP levels, after which it has no further effect.
+
+# Tutorial for `my_knn_cv`
+
+The `my_knn_cv` function is useful for prediction by implementing a k-Nearest Neighbors approach. In this case, we will use it to predict the output class `continent` using covariates `gdpPercap` and `lifeExp`. In particular, we will use 5-fold cross validation and iterate through different amounts of neighbors from `k_nn`$= 1,..., 10$.
+```{r}
+set.seed(302)
+train <- my_gapminder[, c(6, 4)]
+cl <- my_gapminder[, 2]
+cvs <- c()
+train_rates <- c()
+for(i in 1:10) {
+  result <- my_knn_cv(train, cl, i, 5)
+  cvs[i] <- result$cv_err
+  train_rates[i] <- 1 - mean(as.matrix(result$class) == as.matrix(cl))
+}
+mat <- cbind(train_rates, cvs)
+kable_styling(kable(mat))
+```
+Based on the training misclassification rate, the best model is the 1-nearest neighbor model, since it has an error rate of 0. Based on the CV misclassification rate, the best model is a 6-nearest neighbor model, as it produces the lowest error rate. In practice, I would use the 6-nearest neighbor model, since that one is best suited for predicting on new data, seeing how it had the lowest CV misclassification rate (which is predicated on the test data). The cross-validation is more useful for predicting on new data, since the data gets folded into different subsets (5 in this case), and each subset gets treated as a particular test set. So in effect, we are continually re-training different subsets of our data to eventually settle on an average error rate across all tests. This helps prevent extreme error values, which may overfit or underfit our data--both of which are detrimental to prediction.
+
+# Tutorial for `my_rf_cv`
+
+Now we will focus on the `my_rf_cv` function, which is a prediction function based off random forest cross-validation. We will use it to predict life expectancy at birth (`lifeExp`) using the covariate GDP per capita (`gdpPercap`).
+
+In this tutorial, we will test out different values of `k`, which represents the number of folds in our dataset, and compare the CV estimated MSEs for each value of `k`.
+```{r}
+set.seed(302)
+cvs <- c()
+k <- 0
+for(i in c(2, 5, 10)) {
+  for(j in 1:30) {
+    k <- k + 1
+    cvs[k] <- my_rf_cv(i)
+  }
+}
+my_df <- data.frame(k_value = rep(c("2", "5", "10"), each = 30), cv = cvs)
+my_df$k_value <- factor(my_df$k_value, levels = c("2", "5", "10"))
+
+ggplot(my_df, aes(x = k_value, y = cvs)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Cross Validation Errors for a Random Forest Model with 2, 5, and 10 folds ",
+       y = "CV Error",
+       x = "Number of Folds") +
+  theme_bw(base_size = 10) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+```{r}
+cv_mat <- matrix(cvs, nrow = 30, ncol = 3)
+avg_cvs <- c(mean(cv_mat[, 1]), mean(cv_mat[, 2]), mean(cv_mat[, 3]))
+sd_cvs <- c(sd(cv_mat[, 1]), sd(cv_mat[, 2]), sd(cv_mat[, 3]))
+avg_sd_mat <- cbind(avg_cvs, sd_cvs)
+rownames(avg_sd_mat) <- c("k = 2", "k = 5", "k = 10")
+colnames(avg_sd_mat) <- c("Mean CV Estimate", "SD of CV Estimate")
+kable_styling(kable(avg_sd_mat))
+```
+Both the boxplot and the table above show that the CV estimates for 2 folds are slightly lower than 5 and 10 folds. Furthermore, as we increase k, it appears that the standard deviation of our CV estimates seems to decrease. This could be due to the fact that with more folds, we are doing more training simulations. With each training simulation, we get a CV error, which means that with more folds, we are less likely to get an extreme value, since the results from the other folds will tend towards the average over the long run.
