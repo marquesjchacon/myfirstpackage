@@ -17,7 +17,7 @@
 #' my_lm(Sepal.Length ~ Sepal.Width + Petal.Length + Petal.Width, my_iris)
 #' my_lm(lifeExp ~ gdpPercap + continent, my_gapminder)
 #'
-#' @import Matrix stats
+#' @import Matrix stats kableExtra
 #' @export
 my_lm <- function(formula, data) {
   x <- model.matrix(formula, data)
@@ -30,5 +30,6 @@ my_lm <- function(formula, data) {
   p_vals <- pt(abs(test_stat), df, lower.tail = FALSE) * 2
   mat <- cbind(coeff, s_e, test_stat, p_vals)
   colnames(mat) <- c("Estimate", "Std. Error", "t value", "Pr(>|t|)")
-  return(mat)
+  table <- kable_styling(kable(mat))
+  return(table)
 }

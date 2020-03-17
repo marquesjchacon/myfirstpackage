@@ -42,5 +42,36 @@ The first hypothesis that we will test is $\begin{align}
   \end{align}$
 For this particular dataset, the null hypothesis $H_0$ indicates that we assume the true mean life expectancy at birth is 60 years. The alternative hypothesis $H_a$ indicates that the true mean life expectancy at birth is not equal to 60 years. Given this information, we know that we must perform a two-sided t-test using a mean of 60:
 ```{r}
-my_t.test(my_gapminder$lifeExp, "two.sided", 60)
+result1 <- my_t.test(my_gapminder$lifeExp, "two.sided", 60)
+result1
+```
+Using the above result, we can see that the p-value for this hypothesis test is `r result1$p_val`. Using a p-value cutoff of $\alpha = 0.05$, then since our p-value is higher than the cutoff, we cannot reject the null hypothesis in favor of the alternative. This means that we can't reject our assumption that the true mean life expectancy is 60 years.
+
+The next hypothesis that we will test is $\begin{align}
+  H_0: \mu &= 60,\\
+  H_a: \mu &< 60.
+  \end{align}$
+This is similar to our first hypothesis test, except our alternative hypothesis $H_a$ is that mean life expectancy at birth is truly less than 60 years. This means we must call `my_t.test` with the following parameters:
+```{r}
+result2 <- my_t.test(my_gapminder$lifeExp, "less", 60)
+result2
+```
+Using this result, we find that the p-value for this hypothesis test is `r result2$p_val`, which is less than our cutoff of $\alpha = 0.05$. This means that our result was statistically significant and thus we have sufficient evidence to reject the null hypothesis. In other words, perhaps the true mean life expectancy is not equal to 60 years.
+
+The third hypothesis that we will test is $\begin{align}
+  H_0: \mu &= 60,\\
+  H_a: \mu &> 60.
+  \end{align}$
+Like the second hypothesis test, our null hypothesis $H_0$ is that the true mean life expectancy is 60 years. However, this time the alternative hypothesis $H_a$ is that the true mean life expectancy is greater than 60 years. Correspondingly, our hypothesis test warrants the following call:
+```{r}
+result3 <- my_t.test(my_gapminder$lifeExp, "greater", 60)
+result3
+```
+From this result, we see that the p-value for this hypothesis test is `r result3$p_val`, which is significantly above our cutoff of $\alpha = 0.05$. This means that we cannot reject the null hypothesis, since we do not have sufficient evidence suggesting otherwise. In other words, we have failed to reject the notion that the mean life expectancy is 60 years.
+
+# Tutorial for `my_lm`
+
+`my_lm` is a function that performs multiple linear regression using variables from a given dataset. To show how this function works, we will use `lifeExp` as our response varibale and `gdpPercap` and `continent` as our explanatory variables:
+```{r}
+my_lm(lifeExp ~ gdpPercap + continent, my_gapminder)
 ```
