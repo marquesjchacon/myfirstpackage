@@ -3,7 +3,7 @@
 #' This function raises input to a power.
 #'
 #' @param x Numeric input to be raised to the power of \code{power}.
-#' @param power Numeric miput for the power that \code{x} will be raised to,
+#' @param power Numeric input for the power that \code{x} will be raised to,
 #'   defaults to \code{2}.
 #'
 #' @return Numeric representing \code{x} raised to the power of \code{power}.

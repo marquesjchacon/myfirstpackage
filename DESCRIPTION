@@ -17,3 +17,13 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+Imports:
+    class,
+    randomForest,
+    magrittr,
+    Matrix,
+    stringr,
+    ggplot2,
+    stats,
+    dplyr
+Depends: R (>= 3.2)

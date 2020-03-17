@@ -9,7 +9,7 @@ my_pow(x, power = 2)
 \arguments{
 \item{x}{Numeric input to be raised to the power of \code{power}.}
 
-\item{power}{Numeric miput for the power that \code{x} will be raised to,
+\item{power}{Numeric input for the power that \code{x} will be raised to,
 defaults to \code{2}.}
 }
 \value{

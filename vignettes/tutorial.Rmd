@@ -8,6 +8,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+# Introduction
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -15,6 +16,31 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+This package contains useful functions for statistical inference and prediction. Whenever you have a dataset that warrants this type of analysis, use this package to gather further information about your data. To begin, start by installing this package from Github. The code to install this package is shown below:
+```{r, eval = FALSE}
+devtools::install_github("marquesjchacon/myfirstpackage")
+```
+
+Next, you will want include the call `library()` to load this package. For this tutorial, we will also need to load the `tidyverse`, `class`, and `randomForest` packages. Furthermore, we will be using the `my_gapminder` dataset to demonstrate the use of these functions, so we will need to load this dataset as well.
+```{r setup, warning = FALSE, message = FALSE}
 library(myfirstpackage)
+library(tidyverse)
+library(class)
+library(randomForest)
+data("my_gapminder")
+```
+
+After having done these steps, then you are now ready to follow along with this tutorial.
+
+# Tutorial for `my_t.test`
+
+`my_t.test` is a function that performs a one sample t-test on a given set of data. We will use the `lifeExp` data from `my_gapminder` to perform t-tests on life expectancy.
+
+The first hypothesis that we will test is $\begin{align}
+  H_0: \mu &= 60,\\
+  H_a: \mu &\neq 60.
+  \end{align}$
+For this particular dataset, the null hypothesis $H_0$ indicates that we assume the true mean life expectancy at birth is 60 years. The alternative hypothesis $H_a$ indicates that the true mean life expectancy at birth is not equal to 60 years. Given this information, we know that we must perform a two-sided t-test using a mean of 60:
+```{r}
+my_t.test(my_gapminder$lifeExp, "two.sided", 60)
 ```
